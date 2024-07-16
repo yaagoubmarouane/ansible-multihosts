@@ -1,0 +1,67 @@
+---
+- name: Preconfigure MySQL root password
+  debconf:
+    name: "mysql-server"
+    question: "mysql-server/root_password"
+    value: "87AUZYE712YTGHA"
+    vtype: "password"
+
+- name: Preconfigure MySQL root password confirmation
+  debconf:
+    name: "mysql-server"
+    question: "mysql-server/root_password_again"
+    value: "87AUZYE712YTGHA"
+    vtype: "password"
+
+- name: Install MySQL server
+  apt:
+    name: mysql-server
+    state: present
+  tags: mysql
+
+- name: Start and enable MySQL service
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Remove anonymous MySQL users
+  mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+    login_user: root
+    login_password: "87AUZYE712YTGHA"
+
+- name: Remove MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "87AUZYE712YTGHA"
+
+- name: Ensure MySQL is listening on all interfaces
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+  notify: Restart MySQL
+
+- name: Create MySQL databases
+  mysql_db:
+    name: "{{ item.db_name }}"
+    state: present
+    login_user: root
+    login_password: "87AUZYE712YTGHA"
+  loop: "{{ wordpress_sites }}"
+
+- name: Create MySQL users and allow connections from web server
+  mysql_user:
+    name: "{{ item.db_user }}"
+    password: "{{ item.db_password }}"
+    host: '15.188.48.148'
+    priv: "{{ item.db_name }}.*:ALL"
+    state: present
+    login_user: root
+    login_password: "87AUZYE712YTGHA"
+  loop: "{{ wordpress_sites }}"

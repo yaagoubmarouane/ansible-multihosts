@@ -1,0 +1,13 @@
+- hosts: webservers
+  become: yes
+  roles:
+    - wordpress
+  vars:
+    wordpress_sites:
+      - { domain: 'site1.com', db_name: 'site1_db', db_user: 'user1', db_password: 'password1' }
+      - { domain: 'site2.com', db_name: 'site2_db', db_user: 'user2', db_password: 'password2' }
+      - { domain: 'site3.com', db_name: 'site3_db', db_user: 'user3', db_password: 'password3' }
+    domains:
+      - site1.com
+      - site2.com
+      - site3.com

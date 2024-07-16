@@ -1,0 +1,18 @@
+- name: Update and upgrade apt packages
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install Python3-pip
+  apt:
+    name: python3-pip
+    state: present
+- name: Install PyMySQL for Python 3
+  pip:
+    name: PyMySQL
+  when: ansible_python_version.startswith("3")
+
+- name: Install MySQL-python for Python 2
+  pip:
+    name: MySQL-python
+  when: ansible_python_version.startswith("2")

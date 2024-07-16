@@ -1,0 +1,56 @@
+---
+- name: Install software-properties-common
+  apt:
+    name: software-properties-common
+    state: present
+
+- name: Add PHP PPA repository
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+    update_cache: yes
+
+- name: Install PHP and required extensions
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - php-fpm
+    - php
+    - libapache2-mod-php
+    - php-common
+    - php-mysql
+    - php-xml
+    - php-xmlrpc
+    - php-curl
+    - php-gd
+    - php-imagick
+    - php-cli
+    - php-imap
+    - php-mbstring
+    - php-soap
+    - php-zip
+    - php-intl
+    - php-bcmath
+    - unzip
+
+- name: Modify PHP configurations
+  template:
+    src: /home/ubuntu/ansible-wordpress/templates/php.ini.j2
+    dest: /etc/php/8.3/apache2/php.ini
+  notify: Reload Apache2
+
+- name: Enable necessary Apache modules
+  command: "{{ item }}"
+  loop:
+    - a2enmod proxy_fcgi
+    - a2enmod setenvif
+
+- name: Enable PHP-FPM configuration
+  command: a2enconf php8.3-fpm
+
+- name: Start and enable PHP-FPM service
+  service:
+    name: php8.3-fpm
+    state: started
+    enabled: yes

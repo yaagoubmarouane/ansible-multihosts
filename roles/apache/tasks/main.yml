@@ -1,0 +1,54 @@
+---
+- name: Install Apache
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+
+- name: Change Apache to listen on port 8081
+  lineinfile:
+    path: /etc/apache2/ports.conf
+    regexp: '^Listen 80'
+    line: 'Listen 8081'
+
+- name: Create directories for each domain
+  file:
+    path: "/var/www/html/{{ item.domain }}/public"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop: "{{ wordpress_sites }}"
+  
+- name: DEBUG Create virtual host configurations
+  debug:
+    msg: "/etc/apache2/sites-available/{{ item.domain }}.conf"
+  loop: "{{ wordpress_sites }}"
+  
+- name: Create virtual host configurations
+
+  template:
+    src: /home/ubuntu/ansible-wordpress/templates/vhost.conf.j2
+    dest: "/etc/apache2/sites-available/{{ item.domain }}.conf"  
+  loop: "{{ wordpress_sites }}"
+
+- name: Enable virtual hosts
+  command: "{{ item }}"
+  loop: "{{ wordpress_sites | map(attribute='domain') | map('regex_replace', '^(.*)$', 'a2ensite \\1.conf') | list }}"
+  notify: Reload Apache2
+
+- name: Ensure mod_rewrite is enabled
+  apache2_module:
+    name: rewrite
+    state: present
+
+- name: Start and enable Apache
+  systemd:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Restart Apache to apply changes
+  systemd:
+    name: apache2
+    state: restarted

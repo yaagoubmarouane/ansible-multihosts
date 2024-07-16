@@ -1,0 +1,27 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Configure Nginx as a reverse proxy for each domain
+  template:
+    src: /home/ubuntu/ansible-wordpress/templates/nginx.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.domain }}.conf"
+  loop: "{{ wordpress_sites }}"
+  notify: Reload Nginx
+
+- name: Enable Nginx virtual hosts
+  file:
+    src: "/etc/nginx/sites-available/{{ item.domain }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item.domain }}.conf"
+    state: link
+  loop: "{{ wordpress_sites }}"
+  notify: Reload Nginx
+
+- name: Start and enable Nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes

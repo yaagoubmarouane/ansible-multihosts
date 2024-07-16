@@ -1,0 +1,34 @@
+---
+- hosts: webservers
+  become: yes
+  roles:
+    - common
+    - apache
+    - nginx
+    - php
+  vars:
+    wordpress_sites:
+      - { domain: 'site1.ansib', db_name: 'site1_db', db_user: 'user1', db_password: 'password1', db_host: '52.47.176.226' }
+      - { domain: 'site2.ansib', db_name: 'site2_db', db_user: 'user2', db_password: 'password2', db_host: '52.47.176.226' }
+      - { domain: 'site3.ansib', db_name: 'site3_db', db_user: 'user3', db_password: 'password3', db_host: '52.47.176.226' }
+
+- hosts: dbservers
+  become: yes
+  roles:
+    - common
+    - database
+  vars:
+    wordpress_sites:
+      - { domain: 'site1.ansib', db_name: 'site1_db', db_user: 'user1', db_password: 'password1', db_host: '52.47.176.226' }
+      - { domain: 'site2.ansib', db_name: 'site2_db', db_user: 'user2', db_password: 'password2', db_host: '52.47.176.226' }
+      - { domain: 'site3.ansib', db_name: 'site3_db', db_user: 'user3', db_password: 'password3', db_host: '52.47.176.226' }
+      
+- hosts: webservers
+  become: yes
+  roles:
+    - wordpress
+  vars:
+    wordpress_sites:
+      - { domain: 'site1.ansib', db_name: 'site1_db', db_user: 'user1', db_password: 'password1', db_host: '52.47.176.226' }
+      - { domain: 'site2.ansib', db_name: 'site2_db', db_user: 'user2', db_password: 'password2', db_host: '52.47.176.226' }
+      - { domain: 'site3.ansib', db_name: 'site3_db', db_user: 'user3', db_password: 'password3', db_host: '52.47.176.226' }

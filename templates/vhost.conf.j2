@@ -1,0 +1,21 @@
+<VirtualHost *:8081>
+    ServerName {{ item.domain }}
+	ServerAdmin webmaster@{{ item.domain }}
+    DocumentRoot /var/www/html/{{ item.domain }}/public
+	
+	ErrorLog ${APACHE_LOG_DIR}/{{ item.domain }}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ item.domain }}_access.log combined
+	
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    <Directory /var/www/html/{{ item.domain }}/public>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+        Require all granted
+    </Directory>
+</VirtualHost>
